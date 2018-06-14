@@ -39,9 +39,8 @@ namespace RoboCup
                     m_robot.Turn(40);
                     m_memory.waitForNewInfo();
                 }
-				//else if (obj.Distance.Value > 1.5)
-				else if (obj.Distance.Value > 1.0)
-				{
+                else if (obj.Distance.Value > 1.5)
+                {
                     // If ball is too far then
                     // turn to ball or 
                     // if we have correct direction then go to ball

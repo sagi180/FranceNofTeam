@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Windows;
-
 using RoboCup.Infrastructure;
 
 namespace RoboCup.Logic
@@ -17,8 +16,7 @@ namespace RoboCup.Logic
 
         public static double GetAngleBetweenTwoPoints(float x1, float y1 , float x2, float y2)
         {
-
-			return RadianToDegree(Math.Atan2(y2 - y1, x2 - x1));
+            return RadianToDegree(Math.Atan2(y2 - y1, x2 - x1));
         }
 
  
@@ -48,7 +46,7 @@ namespace RoboCup.Logic
             return (A == A1 + A2 + A3);
         }
 
-        public static List<double> GetAllForbiddenAngle(int x1, int y1 , List<System.Drawing.PointF> playetPos , GoalDirection goalDirection)
+        public static List<double> GetAllForbiddenAngle(SeenCoachObject myPos, List<System.Drawing.PointF> playetPos , GoalDirection goalDirection)
         {
             List<double> angels = new List<double>();
 
@@ -66,16 +64,16 @@ namespace RoboCup.Logic
                 GBx = FieldLocations.RightLine;
             }
 
-            var angle = GetAngleBetweenTwoPoints(x1, y1, GBx, GBy);
+            var angle = GetAngleToPoint(myPos, GBx, GBy);
             angels.Add(angle);
-            angle = GetAngleBetweenTwoPoints(x1, y1, GTx, GTy);
+            angle = GetAngleToPoint(myPos, GTx, GTy);
             angels.Add(angle);
 
             foreach (var point in playetPos)
             {
-                if(isPointInTriangle(x1,y1, GTx, GTy, GBx, GBy , point.X , point.Y))
+                if(isPointInTriangle(myPos.Pos.Value.X, myPos.Pos.Value.Y, GTx, GTy, GBx, GBy , point.X , point.Y))
                 {
-                    angle = GetAngleBetweenTwoPoints(x1, y1, point.X, point.Y);
+                    angle = GetAngleToPoint(myPos, point.X, point.Y);
                     angels.Add(angle);
                 }
             }
@@ -84,7 +82,47 @@ namespace RoboCup.Logic
             return angels;
         }
 
-        public static double GetDistance(float x1, float y1, float x2, float y2)
+		public static double GetAngleToPoint(SeenCoachObject myPosByCoach,float x1, float y1)
+		{
+			return GetAngleToPoint(new PointF(x1,y1), myPosByCoach);
+		}
+
+		public static double GetAngleToPoint(PointF targetPoint, SeenCoachObject myPosByCoach)
+		{
+			var angleToTarget = Calc2PointsAngleByXAxis(myPosByCoach.Pos.Value, targetPoint);
+			var myAbsAngle = myPosByCoach.BodyAngle;
+
+			var turnAngle = -1 * (Convert.ToDouble(myAbsAngle) + angleToTarget);
+
+			var fixedAngle = NormalizeTo180(turnAngle);
+
+			return turnAngle;
+		}
+		const double Rad2Deg = 180.0 / Math.PI;
+		const double Deg2Rad = Math.PI / 180.0;
+		private static double Calc2PointsAngleByXAxis(PointF start, PointF end)
+		{
+			return Math.Atan2(start.Y - end.Y, end.X - start.X) * Rad2Deg;
+		}
+
+		private static double NormalizeTo180(double angle)
+		{
+			while (Math.Abs(angle) > 180)
+			{
+				if (angle > 0)
+				{
+					angle = angle - 360;
+				}
+				else
+				{
+					angle = angle + 360;
+				}
+			}
+
+			return angle;
+		}
+
+		public static double GetDistance(float x1, float y1, float x2, float y2)
         {
             //pythagorean theorem c^2 = a^2 + b^2
             //thus c = square root(a^2 + b^2)
@@ -94,8 +132,12 @@ namespace RoboCup.Logic
             return Math.Sqrt(a * a + b * b);
         }
 
-    
 
+        public static double GetDistance(PointF p1, PointF p2)
+        {
+            return GetDistance(p1.X, p1.Y, p2.X, p2.Y);
+
+        }
     }
 
     public enum GoalDirection

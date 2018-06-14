@@ -31,9 +31,9 @@ namespace RoboCup
             }
 
             m_coach = new Coach();
-			//m_teamFormation = new Formation_4_4_2();
-			m_teamFormation = new TeamFrance();
-			m_playerList = m_teamFormation.InitTeam(this, m_coach);
+            //m_teamFormation = new Formation_4_4_2();
+            m_teamFormation = new TeamFrance();
+            m_playerList = m_teamFormation.InitTeam(this, m_coach);
         }
     }
 }
